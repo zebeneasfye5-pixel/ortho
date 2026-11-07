@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: orthodox-universal-portal
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx tsx server.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
