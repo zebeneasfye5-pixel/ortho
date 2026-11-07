@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Flame, Send, Globe, 
-  MessageSquare, Users, Sparkles, CheckCircle2, Mic, Video, VideoOff
+  MessageSquare, Users, Sparkles, CheckCircle2, Mic, Video, VideoOff,
+  Maximize2, Minimize2
 } from 'lucide-react';
 import { LanguageCode, LiveChatMessage } from '../types';
 import { SUPPORTED_LANGUAGES, LIVE_STREAM_MOCK_SPEECH } from '../data/orthodoxData';
@@ -24,8 +25,19 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
   const [autoTranslateChat, setAutoTranslateChat] = useState(true);
   const [isLiveVideoConnected, setIsLiveVideoConnected] = useState(false);
   const [isUserCamOn, setIsUserCamOn] = useState(false);
+  const [isVirtualUserCam, setIsVirtualUserCam] = useState(false);
   const userCamVideoRef = useRef<HTMLVideoElement | null>(null);
   const userCamStreamRef = useRef<MediaStream | null>(null);
+
+  // Automatically attach media stream to userCamVideoRef when mounted or updated
+  useEffect(() => {
+    if (isUserCamOn && !isVirtualUserCam && userCamStreamRef.current && userCamVideoRef.current) {
+      if (userCamVideoRef.current.srcObject !== userCamStreamRef.current) {
+        userCamVideoRef.current.srcObject = userCamStreamRef.current;
+        userCamVideoRef.current.play().catch((e) => console.log('Audience cam auto-play:', e));
+      }
+    }
+  }, [isUserCamOn, isVirtualUserCam, isLiveVideoConnected]);
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([
@@ -111,6 +123,28 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
     }
   }, [speechIndex, isSpeechSynthesisEnabled, currentLang]);
 
+  const streamContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isStreamFullscreen, setIsStreamFullscreen] = useState(false);
+
+  const toggleStreamFullscreen = () => {
+    if (!streamContainerRef.current) return;
+    if (!document.fullscreenElement && !isStreamFullscreen) {
+      if (streamContainerRef.current.requestFullscreen) {
+        streamContainerRef.current.requestFullscreen().catch(() => {
+          setIsStreamFullscreen(true);
+        });
+      } else {
+        setIsStreamFullscreen(true);
+      }
+      setIsStreamFullscreen(true);
+    } else {
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsStreamFullscreen(false);
+    }
+  };
+
   const handleLightCandle = () => {
     if (!hasLitCandle) {
       setCandlesLit((prev) => prev + 1);
@@ -128,21 +162,28 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
         userCamVideoRef.current.srcObject = null;
       }
       setIsUserCamOn(false);
+      setIsVirtualUserCam(false);
       setIsLiveVideoConnected(false);
     } else {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('getUserMedia not available');
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true
         });
         userCamStreamRef.current = stream;
-        if (userCamVideoRef.current) {
-          userCamVideoRef.current.srcObject = stream;
-        }
+        setIsVirtualUserCam(false);
         setIsUserCamOn(true);
         setIsLiveVideoConnected(true);
+        if (userCamVideoRef.current) {
+          userCamVideoRef.current.srcObject = stream;
+          userCamVideoRef.current.play().catch(() => {});
+        }
       } catch (err) {
-        console.warn('Webcam permission note, falling back to simulated live feed:', err);
+        console.warn('Physical camera unavailable or permission denied, using live virtual feed:', err);
+        setIsVirtualUserCam(true);
         setIsUserCamOn(true);
         setIsLiveVideoConnected(true);
       }
@@ -241,7 +282,14 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
           
           {/* Video Player Column */}
           <div className="lg:col-span-8 flex flex-col gap-4">
-            <div className="relative aspect-video rounded-2xl overflow-hidden border border-amber-900/40 bg-black shadow-2xl group">
+            <div 
+              ref={streamContainerRef}
+              className={`relative overflow-hidden border border-amber-900/40 bg-black shadow-2xl group transition-all ${
+                isStreamFullscreen 
+                  ? 'fixed inset-0 z-50 rounded-none w-screen h-screen flex flex-col justify-between' 
+                  : 'aspect-video rounded-2xl'
+              }`}
+            >
               <img
                 src="/src/assets/images/orthodox_liturgical_stream_1794000064768.jpg"
                 alt="Live Orthodox Liturgy Broadcast"
@@ -264,15 +312,32 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
 
               {/* 2-Way Interactive User Live Video Feed (Picture-in-Picture) */}
               {isLiveVideoConnected && (
-                <div className="absolute top-16 right-4 w-36 sm:w-48 aspect-video rounded-xl overflow-hidden border-2 border-amber-400 bg-stone-900 shadow-2xl z-30 animate-fadeIn">
-                  <video
-                    ref={userCamVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-1 left-1.5 bg-stone-950/80 text-[10px] text-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <div className="absolute top-16 right-4 w-36 sm:w-52 aspect-video rounded-xl overflow-hidden border-2 border-amber-400 bg-stone-900 shadow-2xl z-30 animate-fadeIn">
+                  {!isVirtualUserCam ? (
+                    <video
+                      ref={(el) => {
+                        userCamVideoRef.current = el;
+                        if (el && userCamStreamRef.current && el.srcObject !== userCamStreamRef.current) {
+                          el.srcObject = userCamStreamRef.current;
+                          el.play().catch(() => {});
+                        }
+                      }}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <img
+                        src="/src/assets/images/orthodox_believer_video_1794037021389.jpg"
+                        alt="Audience Live Camera"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-1 left-1.5 bg-stone-950/80 text-[10px] text-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>የእኔ ካሜራ (Live Audience)</span>
                   </div>
@@ -353,7 +418,7 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
                   </button>
                 </div>
 
-                {/* Stream Language Selector Quick Switch */}
+                {/* Stream Language Selector Quick Switch & Fullscreen */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-stone-400 hidden sm:inline">የመስማት ቋንቋ:</span>
                   <select
@@ -367,6 +432,15 @@ export const LiveStreamSection: React.FC<LiveStreamSectionProps> = ({
                       </option>
                     ))}
                   </select>
+
+                  <button
+                    onClick={toggleStreamFullscreen}
+                    className="p-1.5 text-stone-300 hover:text-amber-400 hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
+                    title={isStreamFullscreen ? "ሙሉ ስክሪን አጥፋ (Exit Fullscreen)" : "ሙሉ ስክሪን አድርግ (Fullscreen)"}
+                    aria-label="Toggle Fullscreen"
+                  >
+                    {isStreamFullscreen ? <Minimize2 className="w-4 h-4 text-amber-400" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { Radio, HeartHandshake, BookOpen, Sparkles, ShieldCheck, Video } from 'lucide-react';
+import { Radio, HeartHandshake, BookOpen, Sparkles, ShieldCheck, Video, UserCheck } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { UI_STRINGS, TODAY_LITURGY } from '../data/orthodoxData';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -7,12 +7,14 @@ interface HeroSectionProps {
   currentLang: LanguageCode;
   onNavigate: (section: string) => void;
   onOpenTranslator: () => void;
+  onOpenProfile?: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   currentLang,
   onNavigate,
-  onOpenTranslator
+  onOpenTranslator,
+  onOpenProfile
 }) => {
   const strings = UI_STRINGS[currentLang] || UI_STRINGS.am;
 
@@ -83,8 +85,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-stone-300 hover:text-white bg-stone-950/70 hover:bg-stone-900/70 border border-stone-800 rounded-xl transition-all cursor-pointer whitespace-nowrap"
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>ፈጣን የቀጥታ ቋንቋ ተርጓሚ (Live Voice & Text)</span>
-            </button>
+            {onOpenProfile && (
+              <button
+                onClick={onOpenProfile}
+                className="flex items-center gap-3 px-5 py-3.5 text-sm font-semibold text-amber-200 bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/50 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-md"
+              >
+                <UserCheck className="w-4 h-4 text-amber-400" />
+                <span>የምእመንነት ምዝገባና ዲጂታል መታወቂያ</span>
+              </button>
+            )}
 
             {/* In-App PWA Install Action */}
             <PWAInstallButton variant="hero" />

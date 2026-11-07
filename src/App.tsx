@@ -13,7 +13,8 @@ import { HymnsPlayer } from './components/HymnsPlayer';
 import { Footer } from './components/Footer';
 import { VoiceTranslatorModal } from './components/VoiceTranslatorModal';
 import { AdminDashboardModal } from './components/AdminDashboardModal';
-import { LanguageCode } from './types';
+import { MemberProfileModal } from './components/MemberProfileModal';
+import { LanguageCode, MemberProfile } from './types';
 import { Languages } from 'lucide-react';
 
 export default function App() {
@@ -23,6 +24,38 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [isTranslatorModalOpen, setIsTranslatorModalOpen] = useState<boolean>(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+
+  // User Membership Profile state with persistence
+  const [userProfile, setUserProfile] = useState<MemberProfile>(() => {
+    try {
+      const saved = localStorage.getItem('orthodox_member_profile');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      id: 'usr-1',
+      fullName: 'ዘበነ አስፋው',
+      baptismalName: 'ወልደ ጴጥሮስ',
+      role: 'believer',
+      diocese: 'አዲስ አበባ',
+      parishName: 'መንበረ ጸባዖት ቅድስት ሥላሴ ካቴድራል',
+      confessorFather: 'መልአከ መንክራት ቆሞስ አባ ገብረ ኪዳን',
+      preferredLang: 'am',
+      email: 'zebeneasfye5@gmail.com',
+      phone: '+251 91 123 4567',
+      spiritualBio: 'መዝሙር 22፡1 - "እግዚአብሔር እረኛዬ ነው የሚያሳጣኝም የለም።"',
+      avatarUrl: '/src/assets/images/orthodox_believer_video_1794037021389.jpg',
+      membershipId: 'EOTC-2026-8849-ET',
+      registeredDate: 'ጥቅምት 2026'
+    };
+  });
+
+  const handleSaveProfile = (newProfile: MemberProfile) => {
+    setUserProfile(newProfile);
+    try {
+      localStorage.setItem('orthodox_member_profile', JSON.stringify(newProfile));
+    } catch {}
+  };
 
   // Synchronize dark mode class on document element
   useEffect(() => {
@@ -58,6 +91,8 @@ export default function App() {
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
         onOpenAdmin={() => setIsAdminModalOpen(true)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+        userProfile={userProfile}
       />
 
       {/* Main Content Sections */}
@@ -130,6 +165,14 @@ export default function App() {
       <AdminDashboardModal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
+      />
+
+      {/* Member Registration & Digital ID Badge Modal */}
+      <MemberProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        currentProfile={userProfile}
+        onSaveProfile={handleSaveProfile}
       />
     </div>
   );

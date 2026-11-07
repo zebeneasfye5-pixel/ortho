@@ -127,4 +127,19 @@ export interface SynodDecreeItem {
   comments: EngagementComment[];
 }
 
-
+export interface MemberProfile {
+  id: string;
+  fullName: string;
+  baptismalName: string; // የክርስትና ስም
+  role: UserRole | 'choir' | 'sunday_school';
+  diocese: string; // ሀገረ ስብከት
+  parishName: string; // ደብር / ቤተክርስቲያን
+  confessorFather: string; // የንስሐ አባት
+  preferredLang: LanguageCode;
+  email: string;
+  phone: string;
+  spiritualBio: string;
+  avatarUrl: string;
+  membershipId: string;
+  registeredDate: string;
+}

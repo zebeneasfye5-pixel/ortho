@@ -30,11 +30,23 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
   const [isSharingScreen, setIsSharingScreen] = useState(false);
   const [sacredFilter, setSacredFilter] = useState<'none' | 'candle' | 'blur'>('none');
   const [isAudioDubbingOn, setIsAudioDubbingOn] = useState(true);
+  const [isVirtualCam, setIsVirtualCam] = useState(false);
+  const [camNotice, setCamNotice] = useState<string | null>(null);
 
   // Video element refs
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Automatically attach media stream to localVideoRef when mounted or updated
+  useEffect(() => {
+    if (isCameraOn && !isVirtualCam && localStreamRef.current && localVideoRef.current) {
+      if (localVideoRef.current.srcObject !== localStreamRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+        localVideoRef.current.play().catch((e) => console.log('Camera auto-play:', e));
+      }
+    }
+  }, [isCameraOn, isVirtualCam]);
 
   // Switch speakers periodically for conference realism
   useEffect(() => {
@@ -84,20 +96,36 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
         localVideoRef.current.srcObject = null;
       }
       setIsCameraOn(false);
+      setIsVirtualCam(false);
+      setCamNotice(null);
     } else {
+      setCamNotice(null);
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('navigator.mediaDevices not supported');
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: !isMicMuted
         });
         localStreamRef.current = stream;
+        setIsVirtualCam(false);
+        setIsCameraOn(true);
+        // Connect immediately if element is already present
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(() => {});
         }
+      } catch (err: any) {
+        console.warn('Physical webcam unavailable or permission denied:', err);
+        // Graceful live virtual camera fallback
+        setIsVirtualCam(true);
         setIsCameraOn(true);
-      } catch (err) {
-        console.warn('Webcam permission not granted or unavailable, using simulation:', err);
-        setIsCameraOn(true);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setCamNotice('የካሜራ ፈቃድ በብራውዘርዎ ላይ አልተፈቀደም። እባክዎ በብራውዘሩ አድራሻ ላይ የካሜራ ምልክቱን ተጭነው "Allow" ይበሉ ወይም ይህን ምናባዊ የቀጥታ ምስል ይመልከቱ።');
+        } else {
+          setCamNotice('የኮምፒውተር/ስልክ ካሜራ ባለመገኘቱ የቀጥታ ምናባዊ ቪዲዮ (Virtual Cam) በርቷል፡፡');
+        }
       }
     }
   };
@@ -205,7 +233,11 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
         {/* Video Conference Stage Container */}
         <div 
           ref={containerRef}
-          className="relative bg-black rounded-3xl border border-amber-900/50 overflow-hidden shadow-2xl flex flex-col min-h-[640px]"
+          className={`relative bg-black border border-amber-900/50 overflow-hidden shadow-2xl flex flex-col transition-all ${
+            isFullscreen 
+              ? 'fixed inset-0 z-50 rounded-none w-screen h-screen min-h-screen' 
+              : 'rounded-3xl min-h-[640px]'
+          }`}
         >
           {/* Top Video Stage Status Bar */}
           <div className="h-14 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 flex items-center justify-between z-20">
@@ -323,13 +355,33 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
                   {/* User Local Camera Tile */}
                   <div className="relative rounded-xl overflow-hidden bg-stone-900 border border-stone-800 aspect-video">
                     {isCameraOn ? (
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`w-full h-full object-cover ${sacredFilter === 'blur' ? 'blur-sm' : ''}`}
-                      />
+                      !isVirtualCam ? (
+                        <video
+                          ref={(el) => {
+                            localVideoRef.current = el;
+                            if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                              el.srcObject = localStreamRef.current;
+                              el.play().catch(() => {});
+                            }
+                          }}
+                          autoPlay
+                          playsInline
+                          muted
+                          className={`w-full h-full object-cover ${sacredFilter === 'blur' ? 'blur-sm' : ''}`}
+                        />
+                      ) : (
+                        <div className="relative w-full h-full">
+                          <img
+                            src="/src/assets/images/orthodox_believer_video_1794037021389.jpg"
+                            alt={userName}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-1.5 left-1.5 bg-amber-500 text-stone-950 font-bold text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-stone-950 animate-ping" />
+                            <span>ቀጥታ ቪዲዮ</span>
+                          </div>
+                        </div>
+                      )
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center bg-stone-900 text-stone-500 p-2 text-center">
                         <VideoOff className="w-6 h-6 mb-1 text-stone-600" />
@@ -365,13 +417,34 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
                   !isMicMuted ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-stone-800'
                 }`}>
                   {isCameraOn ? (
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className={`w-full h-full object-cover ${sacredFilter === 'blur' ? 'blur-sm' : ''}`}
-                    />
+                    !isVirtualCam ? (
+                      <video
+                        ref={(el) => {
+                          localVideoRef.current = el;
+                          if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                            el.srcObject = localStreamRef.current;
+                            el.play().catch(() => {});
+                          }
+                        }}
+                        autoPlay
+                        playsInline
+                        muted
+                        className={`w-full h-full object-cover ${sacredFilter === 'blur' ? 'blur-sm' : ''}`}
+                      />
+                    ) : (
+                      <div className="relative w-full h-full">
+                        <img
+                          src="/src/assets/images/orthodox_believer_video_1794037021389.jpg"
+                          alt={userName}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                        <div className="absolute top-2.5 left-2.5 bg-amber-500 text-stone-950 font-bold text-[10px] px-2 py-0.5 rounded flex items-center gap-1 shadow">
+                          <span className="w-1.5 h-1.5 rounded-full bg-stone-950 animate-ping" />
+                          <span>ቀጥታ ቪዲዮ (Live Video)</span>
+                        </div>
+                      </div>
+                    )
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-stone-900 text-stone-400 p-4 text-center">
                       <div className="w-16 h-16 rounded-full bg-stone-800 border border-amber-900/40 flex items-center justify-center text-amber-400 text-2xl font-serif-sacred mb-2">
@@ -450,6 +523,22 @@ export const VideoConferenceHub: React.FC<VideoConferenceHubProps> = ({
               </div>
             )}
           </div>
+
+          {/* Camera Permission or Fallback Guidance Toast */}
+          {camNotice && (
+            <div className="mx-4 mb-2 p-3 bg-amber-950/80 border border-amber-500/50 rounded-xl text-amber-200 text-xs flex items-center justify-between gap-3 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{camNotice}</span>
+              </div>
+              <button
+                onClick={() => setCamNotice(null)}
+                className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded text-[11px] font-semibold cursor-pointer shrink-0"
+              >
+                ተረድቻለሁ
+              </button>
+            </div>
+          )}
 
           {/* Bottom Live Conference Control Dock */}
           <div className="h-20 bg-stone-950 border-t border-stone-800 px-6 flex items-center justify-between z-20">

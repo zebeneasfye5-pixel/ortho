@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { 
   ShieldCheck, Lock, HeartHandshake, CheckCircle2, 
-  Calendar, Clock, BookOpen, Send, Sparkles, UserCheck, Flame, Video, VideoOff
+  Calendar, Clock, BookOpen, Send, Sparkles, UserCheck, Flame, Video, VideoOff,
+  Maximize2, Minimize2
 } from 'lucide-react';
 import { ConfessionLesson, PenanceTask } from '../types';
 import { INITIAL_CONFESSION_LESSONS } from '../data/orthodoxData';
@@ -51,8 +51,20 @@ export const ConfessionPortal: React.FC = () => {
   // 1-on-1 Live Video Confession State
   const [isVideoConfessionOpen, setIsVideoConfessionOpen] = useState(false);
   const [isPenitentCamOn, setIsPenitentCamOn] = useState(false);
+  const [isVirtualPenitentCam, setIsVirtualPenitentCam] = useState(false);
+  const [isConfessionFullscreen, setIsConfessionFullscreen] = useState(false);
   const penitentVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const penitentStreamRef = React.useRef<MediaStream | null>(null);
+
+  // Automatically attach media stream to penitentVideoRef when mounted or updated
+  React.useEffect(() => {
+    if (isPenitentCamOn && !isVirtualPenitentCam && penitentStreamRef.current && penitentVideoRef.current) {
+      if (penitentVideoRef.current.srcObject !== penitentStreamRef.current) {
+        penitentVideoRef.current.srcObject = penitentStreamRef.current;
+        penitentVideoRef.current.play().catch((e) => console.log('Penitent cam auto-play:', e));
+      }
+    }
+  }, [isPenitentCamOn, isVirtualPenitentCam, isVideoConfessionOpen]);
 
   // Priest lesson creation form state
   const [newLessonTitle, setNewLessonTitle] = useState('');
@@ -70,16 +82,23 @@ export const ConfessionPortal: React.FC = () => {
         penitentVideoRef.current.srcObject = null;
       }
       setIsPenitentCamOn(false);
+      setIsVirtualPenitentCam(false);
     } else {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('getUserMedia not supported');
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         penitentStreamRef.current = stream;
+        setIsVirtualPenitentCam(false);
+        setIsPenitentCamOn(true);
         if (penitentVideoRef.current) {
           penitentVideoRef.current.srcObject = stream;
+          penitentVideoRef.current.play().catch(() => {});
         }
-        setIsPenitentCamOn(true);
       } catch (err) {
-        console.warn('Penitent cam unavailable:', err);
+        console.warn('Penitent cam unavailable or permission denied, using live virtual feed:', err);
+        setIsVirtualPenitentCam(true);
         setIsPenitentCamOn(true);
       }
     }
@@ -567,7 +586,11 @@ export const ConfessionPortal: React.FC = () => {
         {/* 1-on-1 Live Video Confession Modal */}
         {isVideoConfessionOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <div className="relative w-full max-w-4xl bg-stone-950 border border-amber-900/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className={`relative w-full bg-stone-950 border border-amber-900/60 shadow-2xl overflow-hidden flex flex-col transition-all ${
+              isConfessionFullscreen 
+                ? 'fixed inset-0 z-50 rounded-none w-screen h-screen' 
+                : 'max-w-4xl rounded-3xl'
+            }`}>
               
               {/* Modal Header */}
               <div className="p-4 bg-stone-900/90 border-b border-stone-800 flex items-center justify-between">
@@ -583,19 +606,30 @@ export const ConfessionPortal: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (penitentStreamRef.current) {
-                      penitentStreamRef.current.getTracks().forEach(t => t.stop());
-                      penitentStreamRef.current = null;
-                    }
-                    setIsPenitentCamOn(false);
-                    setIsVideoConfessionOpen(false);
-                  }}
-                  className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-semibold cursor-pointer"
-                >
-                  ውጣ (End Confession)
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsConfessionFullscreen(!isConfessionFullscreen)}
+                    className="p-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-lg text-xs cursor-pointer transition-colors"
+                    title={isConfessionFullscreen ? "ሙሉ ስክሪን አጥፋ" : "ሙሉ ስክሪን አድርግ"}
+                  >
+                    {isConfessionFullscreen ? <Minimize2 className="w-4 h-4 text-amber-400" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (penitentStreamRef.current) {
+                        penitentStreamRef.current.getTracks().forEach(t => t.stop());
+                        penitentStreamRef.current = null;
+                      }
+                      setIsPenitentCamOn(false);
+                      setIsConfessionFullscreen(false);
+                      setIsVideoConfessionOpen(false);
+                    }}
+                    className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-semibold cursor-pointer"
+                  >
+                    ውጣ (End Confession)
+                  </button>
+                </div>
               </div>
 
               {/* 2-Way Video Stage */}
@@ -624,13 +658,30 @@ export const ConfessionPortal: React.FC = () => {
                 {/* Tile 2: Believer Live Video Feed */}
                 <div className="relative rounded-2xl overflow-hidden bg-stone-900 border border-stone-800 aspect-video shadow-xl">
                   {isPenitentCamOn ? (
-                    <video
-                      ref={penitentVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
+                    !isVirtualPenitentCam ? (
+                      <video
+                        ref={(el) => {
+                          penitentVideoRef.current = el;
+                          if (el && penitentStreamRef.current && el.srcObject !== penitentStreamRef.current) {
+                            el.srcObject = penitentStreamRef.current;
+                            el.play().catch(() => {});
+                          }
+                        }}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="relative w-full h-full">
+                        <img
+                          src="/src/assets/images/orthodox_believer_video_1794037021389.jpg"
+                          alt="Penitent Believer Live Feed"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                      </div>
+                    )
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 p-4">
                       <VideoOff className="w-8 h-8 text-stone-600 mb-2" />

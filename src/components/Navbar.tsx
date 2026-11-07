@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Globe, Radio, Volume2, VolumeX, Moon, Sun, Lock, BookOpen, Menu, X, Shield, Settings, Server, ChevronRight } from 'lucide-react';
-import { LanguageCode } from '../types';
+import { Globe, Radio, Volume2, VolumeX, Moon, Sun, Lock, BookOpen, Menu, X, Shield, Settings, Server, ChevronRight, User } from 'lucide-react';
+import { LanguageCode, MemberProfile } from '../types';
 import { SUPPORTED_LANGUAGES, UI_STRINGS } from '../data/orthodoxData';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -14,6 +14,8 @@ interface NavbarProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onOpenAdmin: () => void;
+  onOpenProfile?: () => void;
+  userProfile?: MemberProfile;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,7 +27,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleAudio,
   isDarkMode,
   onToggleTheme,
-  onOpenAdmin
+  onOpenAdmin,
+  onOpenProfile,
+  userProfile
 }) => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const strings = UI_STRINGS[currentLang] || UI_STRINGS.am;
@@ -183,6 +187,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
+          {/* Member Profile & Digital ID Button */}
+          {onOpenProfile && (
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-stone-900 hover:bg-stone-850 border border-amber-900/40 hover:border-amber-500/60 rounded-lg text-xs transition-all cursor-pointer"
+              title="የምእመንነት መታወቂያና ፕሮፋይል (Member Profile & Digital ID)"
+            >
+              <img
+                src={userProfile?.avatarUrl || '/src/assets/images/orthodox_believer_video_1794037021389.jpg'}
+                alt={userProfile?.fullName || 'Profile'}
+                className="w-4 h-4 rounded-full object-cover border border-amber-400/80 shrink-0"
+              />
+              <span className="hidden sm:inline font-semibold text-stone-200 truncate max-w-[100px]">
+                {userProfile?.baptismalName || userProfile?.fullName || 'ፕሮፋይል'}
+              </span>
+            </button>
+          )}
+
           {/* PWA Install Button */}
           <PWAInstallButton variant="compact" />
 
@@ -209,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Sidebar Panel */}
         <aside className="relative z-10 w-80 max-w-[85vw] h-full bg-stone-950 border-r border-amber-900/40 shadow-2xl flex flex-col justify-between overflow-y-auto p-6 animate-in slide-in-from-left duration-300">
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Drawer Header */}
             <div className="flex items-center justify-between pb-4 border-b border-amber-900/30">
               <div className="flex items-center gap-2">
@@ -228,6 +250,48 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Member Profile & Digital ID Mini-Badge Card */}
+            {onOpenProfile && (
+              <div className="p-3.5 bg-gradient-to-br from-stone-900 to-amber-950/30 border border-amber-500/30 rounded-2xl shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-serif-sacred font-bold text-amber-300 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-amber-400" />
+                    <span>የምእመንነት መታወቂያ</span>
+                  </span>
+                  <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                    Verified
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={userProfile?.avatarUrl || '/src/assets/images/orthodox_believer_video_1794037021389.jpg'}
+                    alt={userProfile?.fullName || 'User'}
+                    className="w-11 h-11 rounded-xl object-cover border-2 border-amber-400/80 shrink-0"
+                  />
+                  <div className="overflow-hidden">
+                    <span className="font-bold font-serif-sacred text-stone-100 text-xs block truncate">
+                      {userProfile?.fullName || 'ዘበነ አስፋው'}
+                    </span>
+                    <span className="text-[10px] text-amber-300 block truncate font-serif-sacred">
+                      {userProfile?.baptismalName || 'ወልደ ጴጥሮስ'}
+                    </span>
+                    <span className="text-[10px] text-stone-400 block font-mono">
+                      {userProfile?.membershipId || 'EOTC-2026-8849-ET'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsSideMenuOpen(false);
+                    onOpenProfile();
+                  }}
+                  className="w-full mt-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  ዲጂታል ካርዱን እይ / ፕሮፋይል አስተካክል
+                </button>
+              </div>
+            )}
 
             {/* Secret / Hidden Admin Portal Card (መረጃውን በስተጀርባ የደበቀው ክፍል) */}
             <div className="p-4 bg-gradient-to-br from-amber-950/50 via-stone-900 to-stone-950 border border-amber-800/40 rounded-xl shadow-lg">
