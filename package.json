@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
+    "prestart": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist/index.html')){ console.log('Building dist...'); require('child_process').execSync('npm run build',{stdio:'inherit'}); }\"",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",

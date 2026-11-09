@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
@@ -181,18 +182,45 @@ Always speak with pastoral gentleness, profound theological accuracy, Biblical c
 
 // Serve frontend in development with Vite or in production from dist
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
+  const distPath = path.resolve(__dirname, 'dist');
+  const indexPath = path.resolve(distPath, 'index.html');
+
+  if (process.env.NODE_ENV === 'production') {
+    // If dist/index.html does not exist because build command wasn't executed on Render,
+    // automatically trigger the build or fallback to Vite SPA handler
+    if (!fs.existsSync(indexPath)) {
+      console.warn('⚠️ Warning: dist/index.html was not found on server startup!');
+      console.log('🔄 Attempting automatic fallback build (npm run build)...');
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npm run build', { stdio: 'inherit' });
+        console.log('✅ Automatic fallback build completed successfully.');
+      } catch (buildErr) {
+        console.error('❌ Automatic build failed or not permitted, falling back to Vite runtime:', buildErr);
+      }
+    }
+
+    if (fs.existsSync(indexPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (_req, res) => {
+        res.sendFile(indexPath);
+      });
+    } else {
+      // Dynamic fallback to Vite middleware if dist is still unavailable
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    }
+  } else {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
-    });
   }
 
   app.listen(PORT, '0.0.0.0', () => {
