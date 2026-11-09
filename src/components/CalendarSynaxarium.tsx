@@ -72,38 +72,38 @@ export const CalendarSynaxarium: React.FC = () => {
               </div>
 
               <div className="my-5">
-                <h3 className="text-xl sm:text-2xl font-serif-sacred font-bold text-amber-100 mb-2">
+                <h3 className="text-2xl sm:text-3xl font-serif-sacred font-bold text-amber-100 mb-3">
                   {TODAY_LITURGY.saintOfTheDay}
                 </h3>
-                <p className="text-sm text-stone-200 leading-relaxed font-sans">
+                <p className="text-base sm:text-lg text-stone-100 leading-relaxed font-sans font-normal">
                   {TODAY_LITURGY.synaxariumSummary}
                 </p>
               </div>
 
               {/* Fasting & Liturgical Guidance */}
-              <div className="p-4 bg-amber-950/20 border border-amber-500/20 rounded-xl text-xs space-y-1">
-                <span className="font-semibold text-amber-400 block">የዕለቱ ጾምና ሥርዓት:</span>
-                <p className="text-stone-300">
+              <div className="p-4 sm:p-5 bg-amber-950/30 border border-amber-500/30 rounded-xl text-sm sm:text-base space-y-1.5">
+                <span className="font-bold text-amber-300 block">የዕለቱ ጾምና ሥርዓት:</span>
+                <p className="text-stone-200 leading-relaxed">
                   {TODAY_LITURGY.fastingStatus}
                 </p>
               </div>
 
               {/* Today's Scripture Readings */}
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 bg-stone-950 rounded-xl border border-stone-800">
-                  <span className="text-amber-400 font-semibold block mb-1">
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm">
+                <div className="p-4 bg-stone-950 rounded-xl border border-stone-800">
+                  <span className="text-amber-400 font-bold block mb-1">
                     📖 የዕለቱ ወንጌል ንባብ:
                   </span>
-                  <span className="text-stone-300 font-serif-sacred">
+                  <span className="text-stone-200 font-serif-sacred font-medium leading-relaxed block">
                     {TODAY_LITURGY.gospelReading}
                   </span>
                 </div>
 
-                <div className="p-3.5 bg-stone-950 rounded-xl border border-stone-800">
-                  <span className="text-amber-400 font-semibold block mb-1">
+                <div className="p-4 bg-stone-950 rounded-xl border border-stone-800">
+                  <span className="text-amber-400 font-bold block mb-1">
                     📜 የሐዋርያው ጳውሎስ መልእክት:
                   </span>
-                  <span className="text-stone-300 font-serif-sacred">
+                  <span className="text-stone-200 font-serif-sacred font-medium leading-relaxed block">
                     {TODAY_LITURGY.epistleReading}
                   </span>
                 </div>
@@ -116,28 +116,28 @@ export const CalendarSynaxarium: React.FC = () => {
           <div className="lg:col-span-5 space-y-6">
             <div className="p-6 bg-stone-900/80 border border-amber-900/40 rounded-2xl shadow-xl">
               <div className="flex items-center gap-2 mb-4">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <h3 className="font-serif-sacred font-bold text-amber-200 text-base">
+                <Clock className="w-5 h-5 text-amber-400" />
+                <h3 className="font-serif-sacred font-bold text-amber-200 text-lg">
                   የቀጣይ ታላላቅ አጽዋማትና በዓላት ቀን መቁጠሪያ
                 </h3>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {upcomingFeasts.map((feast, idx) => (
                   <div
                     key={idx}
                     onClick={() => setSelectedFeast(idx === selectedFeast ? null : idx)}
-                    className="p-4 bg-stone-950/70 border border-stone-800 hover:border-amber-500/40 rounded-xl cursor-pointer transition-all"
+                    className="p-4 sm:p-5 bg-stone-950/80 border border-stone-800 hover:border-amber-500/50 rounded-xl cursor-pointer transition-all"
                   >
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs sm:text-sm font-semibold font-serif-sacred text-amber-200">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <h4 className="text-sm sm:text-base font-bold font-serif-sacred text-amber-200">
                         {feast.name}
                       </h4>
-                      <span className="text-[11px] font-mono text-amber-400">
+                      <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                         {feast.ethiopicDate}
                       </span>
                     </div>
-                    <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                    <p className="text-sm text-stone-300 leading-relaxed font-normal">
                       {feast.desc}
                     </p>
                   </div>

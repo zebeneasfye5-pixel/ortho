@@ -14,6 +14,8 @@ import { Footer } from './components/Footer';
 import { VoiceTranslatorModal } from './components/VoiceTranslatorModal';
 import { AdminDashboardModal } from './components/AdminDashboardModal';
 import { MemberProfileModal } from './components/MemberProfileModal';
+import { ChurchDonationModal } from './components/ChurchDonationModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { LanguageCode, MemberProfile } from './types';
 import { Languages } from 'lucide-react';
 
@@ -25,6 +27,15 @@ export default function App() {
   const [isTranslatorModalOpen, setIsTranslatorModalOpen] = useState<boolean>(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState<boolean>(false);
+  const [donationCategory, setDonationCategory] = useState<string>('monasteries');
+  const [donationPriest, setDonationPriest] = useState<string | undefined>(undefined);
+
+  const handleOpenDonation = (category = 'monasteries', priest?: string) => {
+    setDonationCategory(category);
+    setDonationPriest(priest);
+    setIsDonationModalOpen(true);
+  };
 
   // User Membership Profile state with persistence
   const [userProfile, setUserProfile] = useState<MemberProfile>(() => {
@@ -92,6 +103,7 @@ export default function App() {
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
         onOpenAdmin={() => setIsAdminModalOpen(true)}
         onOpenProfile={() => setIsProfileModalOpen(true)}
+        onOpenDonation={handleOpenDonation}
         userProfile={userProfile}
       />
 
@@ -101,6 +113,8 @@ export default function App() {
           currentLang={currentLang}
           onNavigate={handleNavigate}
           onOpenTranslator={() => setIsTranslatorModalOpen(true)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenDonation={handleOpenDonation}
         />
 
         <LiveStreamSection
@@ -118,7 +132,9 @@ export default function App() {
           onSelectLang={(lang) => setCurrentLang(lang)}
         />
 
-        <ConfessionPortal />
+        <ConfessionPortal
+          onOpenDonation={handleOpenDonation}
+        />
 
         <HierarchySection />
 
@@ -142,6 +158,7 @@ export default function App() {
         onNavigate={handleNavigate}
         onOpenTranslator={() => setIsTranslatorModalOpen(true)}
         onOpenAdmin={() => setIsAdminModalOpen(true)}
+        onOpenDonation={handleOpenDonation}
       />
 
       {/* Dedicated Floating Quick Action for Universal Voice Translator */}
@@ -174,6 +191,17 @@ export default function App() {
         currentProfile={userProfile}
         onSaveProfile={handleSaveProfile}
       />
+
+      {/* International & Local Church Donation Gateway Modal */}
+      <ChurchDonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
+        defaultCategory={donationCategory}
+        priestName={donationPriest}
+      />
+
+      {/* Offline Status & Local PWA Storage Banner */}
+      <OfflineIndicator />
     </div>
   );
 }

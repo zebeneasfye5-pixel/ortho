@@ -1,6 +1,22 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+html {
+  font-size: 17px;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 18.5px;
+  }
+}
+
 @layer base {
   :root {
     --sacred-gold: #D4AF37;
@@ -9,25 +25,26 @@
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', 'Noto Sans Ethiopic', sans-serif;
+    font-family: 'Noto Sans Ethiopic', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color-scheme: dark light;
-    font-size: 16px;
+    font-size: 1.05rem;
     font-weight: 500;
-    line-height: 1.65;
+    line-height: 1.75;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3, h4, h5, .font-serif-sacred {
-    font-family: 'Cinzel', 'Noto Serif Ethiopic', 'Cormorant Garamond', serif;
+    font-family: 'Noto Serif Ethiopic', 'Cinzel', 'Cormorant Garamond', serif;
     font-weight: 700;
     letter-spacing: 0.015em;
   }
 
   p {
-    font-size: 1rem;
-    line-height: 1.7;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    font-weight: 450;
   }
 }
 

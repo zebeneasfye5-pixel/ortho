@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, Lock, HeartHandshake, CheckCircle2, 
   Calendar, Clock, BookOpen, Send, Sparkles, UserCheck, Flame, Video, VideoOff,
@@ -6,7 +7,11 @@ import {
 import { ConfessionLesson, PenanceTask } from '../types';
 import { INITIAL_CONFESSION_LESSONS } from '../data/orthodoxData';
 
-export const ConfessionPortal: React.FC = () => {
+interface ConfessionPortalProps {
+  onOpenDonation?: (category?: string, priest?: string) => void;
+}
+
+export const ConfessionPortal: React.FC<ConfessionPortalProps> = ({ onOpenDonation }) => {
   const [activeTab, setActiveTab] = useState<'child' | 'priest'>('child');
   const [lessons, setLessons] = useState<ConfessionLesson[]>(INITIAL_CONFESSION_LESSONS);
 
@@ -105,8 +110,8 @@ export const ConfessionPortal: React.FC = () => {
   };
 
   const toggleTask = (id: string) => {
-    setPenanceTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    setPenanceTasks((prev: PenanceTask[]) =>
+      prev.map((t: PenanceTask) => (t.id === id ? { ...t, completed: !t.completed } : t))
     );
   };
 
@@ -255,16 +260,28 @@ export const ConfessionPortal: React.FC = () => {
                     <span className="text-xs text-stone-400 font-mono hidden sm:inline">
                       መለያ: #CONF-2026-ET
                     </span>
-                    <button
-                      onClick={() => {
-                        setIsVideoConfessionOpen(true);
-                        togglePenitentCam();
-                      }}
-                      className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
-                    >
-                      <Video className="w-3.5 h-3.5" />
-                      <span>የቀጥታ 1-ለ-1 የቪዲዮ ንስሐ</span>
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {onOpenDonation && (
+                        <button
+                          onClick={() => onOpenDonation('priest_honorarium', 'መልአከ መንክራት ቆሞስ አባ ገብረ ኪዳን')}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 hover:bg-stone-850 text-amber-300 border border-amber-500/40 font-semibold text-xs rounded-xl shadow-sm transition-colors cursor-pointer"
+                          title="ለአባታችን ፍሬ በረከት / ስጦታ አበርክት"
+                        >
+                          <HeartHandshake className="w-3.5 h-3.5 text-amber-400" />
+                          <span>ፍሬ በረከት አበርክት</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setIsVideoConfessionOpen(true);
+                          togglePenitentCam();
+                        }}
+                        className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>የቀጥታ 1-ለ-1 የቪዲዮ ንስሐ</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -388,12 +405,12 @@ export const ConfessionPortal: React.FC = () => {
                     </h4>
                   </div>
                   <span className="text-[11px] text-amber-400 font-mono">
-                    {penanceTasks.filter(t => t.completed).length} / {penanceTasks.length} ተፈጽሟል
+                    {penanceTasks.filter((t: PenanceTask) => t.completed).length} / {penanceTasks.length} ተፈጽሟል
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  {penanceTasks.map((task) => (
+                  {penanceTasks.map((task: PenanceTask) => (
                     <div
                       key={task.id}
                       onClick={() => toggleTask(task.id)}
@@ -437,7 +454,7 @@ export const ConfessionPortal: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {lessons.slice(0, 2).map((lesson) => (
+                  {lessons.slice(0, 2).map((lesson: ConfessionLesson) => (
                     <div key={lesson.id} className="p-4 bg-stone-900/60 rounded-xl border border-stone-800">
                       <div className="flex items-center justify-between text-[11px] text-stone-400 mb-1">
                         <span className="text-amber-400 font-semibold">{lesson.priestName}</span>

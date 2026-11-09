@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Radio, Volume2, VolumeX, Moon, Sun, Lock, BookOpen, Menu, X, Shield, Settings, Server, ChevronRight, User } from 'lucide-react';
+import { Globe, Radio, Volume2, VolumeX, Moon, Sun, Lock, BookOpen, Menu, X, Shield, Settings, Server, ChevronRight, User, HeartHandshake } from 'lucide-react';
 import { LanguageCode, MemberProfile } from '../types';
 import { SUPPORTED_LANGUAGES, UI_STRINGS } from '../data/orthodoxData';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -15,6 +15,7 @@ interface NavbarProps {
   onToggleTheme: () => void;
   onOpenAdmin: () => void;
   onOpenProfile?: () => void;
+  onOpenDonation?: (category?: string) => void;
   userProfile?: MemberProfile;
 }
 
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleTheme,
   onOpenAdmin,
   onOpenProfile,
+  onOpenDonation,
   userProfile
 }) => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
@@ -61,13 +63,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
         {/* Zone 2: 4-5 clean single-line text navigation links */}
-        <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
+        <nav className="hidden lg:flex items-center gap-7 text-base font-semibold">
           <button
             onClick={() => onNavigate('live')}
-            className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer pb-0.5 border-b-2 ${
+            className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer pb-1 border-b-2 ${
               activeSection === 'live' 
-                ? 'text-amber-400 border-amber-400 font-semibold' 
-                : 'text-stone-300 border-transparent hover:text-white hover:border-amber-400/50'
+                ? 'text-amber-400 border-amber-400 font-bold' 
+                : 'text-stone-200 border-transparent hover:text-white hover:border-amber-400/50'
             }`}
           >
             {strings.navLive}
@@ -205,6 +207,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Donation & Tithe Action Button */}
+          {onOpenDonation && (
+            <button
+              onClick={() => onOpenDonation('monasteries')}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-600/30 to-amber-700/40 hover:from-amber-600/50 hover:to-amber-700/60 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+              title="የበረከት ስጦታና አስራት አበርክት (International & Local Donations)"
+            >
+              <HeartHandshake className="w-3.5 h-3.5 text-amber-400" />
+              <span>ስጦታ/አስራት</span>
+            </button>
+          )}
+
           {/* PWA Install Button */}
           <PWAInstallButton variant="compact" />
 
@@ -316,9 +330,33 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
+            {/* Donation & Tithes Drawer Action */}
+            {onOpenDonation && (
+              <div className="p-4 bg-stone-900/90 border border-amber-500/30 rounded-xl">
+                <div className="flex items-center gap-2 mb-1.5 text-amber-300">
+                  <HeartHandshake className="w-4 h-4 text-amber-400" />
+                  <span className="font-serif-sacred font-bold text-xs">
+                    የበረከት ስጦታና አስራት (Giving & Charity)
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-400 leading-relaxed mb-2.5">
+                  ለገዳማት፣ ለንስሐ አባቶች፣ ለዜማ ተማሪዎችና ለረድኤት በቴሌብር፣ በሲቢኢ ወይም በካርድ ያበርክቱ።
+                </p>
+                <button
+                  onClick={() => {
+                    setIsSideMenuOpen(false);
+                    onOpenDonation('monasteries');
+                  }}
+                  className="w-full py-2 px-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  ስጦታ አበርክት (Donate Now)
+                </button>
+              </div>
+            )}
+
             {/* Navigation Section Links */}
-            <div className="space-y-1">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-stone-500 px-2 block mb-2">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono uppercase tracking-wider text-amber-400/90 font-bold px-2 block mb-2">
                 ዋና ዋና አገልግሎቶች
               </span>
 
@@ -340,33 +378,44 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setIsSideMenuOpen(false);
                     onNavigate(item.id);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all text-left cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all text-left cursor-pointer ${
                     activeSection === item.id 
-                      ? 'bg-amber-500/10 text-amber-300 font-semibold border-l-2 border-amber-400' 
-                      : 'text-stone-300 hover:bg-stone-900 hover:text-white'
+                      ? 'bg-amber-500/15 text-amber-300 font-bold border-l-3 border-amber-400' 
+                      : 'text-stone-200 hover:bg-stone-900 hover:text-white'
                   }`}
                 >
                   <span>{item.label}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-stone-600" />
+                  <ChevronRight className="w-4 h-4 text-stone-500" />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Drawer Footer Status */}
-          <div className="pt-4 border-t border-stone-900 space-y-2 text-[11px] text-stone-400">
+          {/* Drawer Footer Status & Developer Credit */}
+          <div className="pt-4 border-t border-stone-800 space-y-2.5 text-xs text-stone-300">
             <div className="flex items-center justify-between">
-              <span className="text-stone-500">የሲስተም ሁኔታ:</span>
-              <span className="flex items-center gap-1.5 text-emerald-400 font-mono">
+              <span className="text-stone-400">የሲስተም ሁኔታ:</span>
+              <span className="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Online & Synced
+                Online & Offline PWA Ready
               </span>
             </div>
-            <div className="flex items-center justify-between text-stone-500">
-              <span>WebRTC ቪዲዮ/ኦዲዮ:</span>
-              <span className="text-amber-400 font-mono">Active</span>
+            <div className="flex items-center justify-between text-stone-400">
+              <span>WebRTC ቪዲዮ/ካሜራ:</span>
+              <span className="text-amber-400 font-mono font-bold">Hardware Active</span>
             </div>
-            <div className="pt-2 text-center text-[10px] text-stone-600">
+            
+            {/* Developer Credit */}
+            <div className="pt-3 border-t border-amber-900/40 text-center bg-stone-900/60 p-2.5 rounded-xl">
+              <div className="text-xs font-serif-sacred font-bold text-amber-300">
+                የተገነባው በዘበነ አስፍዬ / Zebene Asfye
+              </div>
+              <div className="text-[11px] text-stone-400 font-mono mt-0.5">
+                Lead Platform Architect & Engineer
+              </div>
+            </div>
+
+            <div className="text-center text-[11px] text-stone-500">
               © {new Date().getFullYear()} Orthodox Universal Portal
             </div>
           </div>

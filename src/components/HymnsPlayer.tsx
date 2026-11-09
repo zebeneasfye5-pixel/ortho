@@ -172,16 +172,16 @@ export const HymnsPlayer: React.FC<HymnsPlayerProps> = ({
                     )}
                   </div>
                   <div>
-                    <h4 className="font-serif-sacred font-bold text-sm text-amber-100">
+                    <h4 className="font-serif-sacred font-bold text-base text-amber-100">
                       {hymn.title}
                     </h4>
-                    <p className="text-xs text-stone-400">
-                      ዜማ: <span className="text-amber-400 font-medium">{hymn.mode}</span> · {hymn.occasion}
+                    <p className="text-sm text-stone-300 mt-0.5">
+                      ዜማ: <span className="text-amber-400 font-bold">{hymn.mode}</span> · {hymn.occasion}
                     </p>
                   </div>
                 </div>
 
-                <span className="text-xs font-mono text-stone-500">
+                <span className="text-sm font-mono text-stone-400 font-medium">
                   {hymn.duration}
                 </span>
               </div>
@@ -190,55 +190,55 @@ export const HymnsPlayer: React.FC<HymnsPlayerProps> = ({
 
           {/* Hymn Lyrics & Theological Translation Display (7 cols) */}
           <div className="lg:col-span-7 bg-stone-950/90 border border-amber-900/30 rounded-2xl p-6 sm:p-8 shadow-xl">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-800 text-xs">
-              <span className="text-amber-400 font-serif-sacred font-semibold">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-800 text-sm">
+              <span className="text-amber-400 font-serif-sacred font-bold">
                 ስልተ ዜማ: {selectedHymn.mode}
               </span>
-              <span className="text-stone-400 font-mono">
+              <span className="text-stone-300 font-mono font-medium">
                 ደርሳኝ: {selectedHymn.composer}
               </span>
             </div>
 
             <div className="my-6">
-              <h3 className="text-2xl font-serif-sacred font-bold text-amber-100 mb-2">
+              <h3 className="text-2xl sm:text-3xl font-serif-sacred font-bold text-amber-100 mb-2">
                 {selectedHymn.title}
               </h3>
-              <p className="text-xs text-amber-400/90">
+              <p className="text-sm text-amber-400 font-medium">
                 የበዓሉ ምክንያት: {selectedHymn.occasion}
               </p>
             </div>
 
             {/* Ge'ez Original Chanting Text */}
-            <div className="p-5 bg-stone-900/80 rounded-2xl border border-stone-800 my-4">
-              <span className="text-xs text-amber-400 font-semibold block mb-2 font-mono">
+            <div className="p-6 bg-stone-900/80 rounded-2xl border-2 border-amber-500/30 my-4 shadow-inner">
+              <span className="text-xs text-amber-400 font-bold block mb-2 font-mono uppercase tracking-wider">
                 የግዕዝ ዜማ ጽሑፍ (Sacred Ge'ez Notation):
               </span>
-              <p className="text-lg sm:text-xl font-serif-sacred text-amber-100 font-bold leading-relaxed">
+              <p className="text-2xl sm:text-3xl font-serif-sacred text-amber-100 font-bold leading-relaxed">
                 "{selectedHymn.lyricsGeez}"
               </p>
             </div>
 
             {/* Translation Text */}
-            <div className="p-4 bg-amber-950/20 rounded-xl border border-amber-500/20 text-xs">
-              <span className="text-amber-300 font-semibold block mb-1">
+            <div className="p-5 bg-amber-950/30 rounded-xl border border-amber-500/30 text-sm sm:text-base">
+              <span className="text-amber-300 font-bold block mb-1.5">
                 ትርጓሜ (Liturgical Translation):
               </span>
-              <p className="text-stone-300 leading-relaxed font-sans">
+              <p className="text-stone-100 leading-relaxed font-sans font-normal">
                 "{selectedHymn.lyricsTranslation}"
               </p>
             </div>
 
             {/* Chanting Control Action */}
-            <div className="mt-6 flex items-center justify-between pt-4 border-t border-stone-800">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-stone-800">
               <button
                 onClick={() => togglePlayHymn(selectedHymn)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="flex items-center gap-2.5 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm rounded-xl transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
               >
-                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
                 <span>{isPlaying ? 'ዜማውን አቁም' : 'ዜማውን አድምጥ'}</span>
               </button>
 
-              <span className="text-xs text-stone-400 flex items-center gap-1.5">
+              <span className="text-sm text-stone-300 flex items-center gap-2 font-medium">
                 <Volume2 className="w-4 h-4 text-amber-400" />
                 <span>የቅዱስ ያሬድ ዜማ ሞገድ (220 Hz Resonant)</span>
               </span>

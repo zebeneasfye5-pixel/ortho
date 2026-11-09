@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Lock, Unlock, Shield, Settings, Users, Radio, 
   FileText, CheckCircle2, AlertTriangle, Cloud, Server, 
-  Terminal, Globe, Key, Eye, EyeOff
+  Terminal, Globe, Key, Eye, EyeOff, Code, Award
 } from 'lucide-react';
 
 interface AdminDashboardModalProps {
@@ -17,7 +17,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'broadcast' | 'synod' | 'resources' | 'deployment'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'broadcast' | 'synod' | 'resources' | 'deployment' | 'architect'>('analytics');
 
   // Broadcast settings state
   const [streamTitle, setStreamTitle] = useState('የመድኃኔዓለም ዓመታዊ በዓል ቅዳሴ - መንበረ ጸባዖት');
@@ -185,6 +185,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               >
                 <Cloud className="w-4 h-4" />
                 <span>ዲፕሎይመንትና ሰርቨር</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('architect')}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2.5 cursor-pointer transition-colors ${
+                  activeTab === 'architect'
+                    ? 'bg-amber-500 text-stone-950 shadow-md'
+                    : 'text-amber-300 hover:text-white hover:bg-stone-900'
+                }`}
+              >
+                <Award className="w-4 h-4 text-amber-400" />
+                <span>የመድረኩ መሃንዲስ (Architect)</span>
               </button>
             </div>
 
@@ -391,6 +403,56 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                       <span className="font-bold text-xs text-amber-400 block">የድምፅና የቪዲዮ ግንኙነት (WebRTC)፡</span>
                       <p className="text-xs text-stone-300 leading-relaxed">
                         • የድምፅና የቪዲዮ የቀጥታ ግንኙነት በብራውዘር ደረጃ በ <strong>HTTPS</strong> ላይ በቀጥታ የሚሰራ በመሆኑ፣ በ Renderም ሆነ በ Vercel ሁለቱም ላይ ያለ ምንም ተጨማሪ ስራ ያለምንም እንከን በቀጥታ ይገናኛል!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 5: Lead Architect & Developer Profile */}
+              {activeTab === 'architect' && (
+                <div className="space-y-6">
+                  <div className="p-6 bg-gradient-to-br from-amber-950/60 via-stone-900 to-stone-950 border-2 border-amber-500/50 rounded-2xl shadow-xl">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                      <div className="w-20 h-20 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-amber-300 text-3xl font-serif-sacred shrink-0 shadow-inner">
+                        ✝
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                          <span className="text-xs font-mono font-bold uppercase bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/40">
+                            Creator & Lead Architect
+                          </span>
+                          <span className="text-xs text-emerald-400 font-mono font-bold">● Certified</span>
+                        </div>
+                        <h4 className="text-2xl font-serif-sacred font-bold text-amber-100">
+                          ዘበነ አስፍዬ (Zebene Asfye)
+                        </h4>
+                        <p className="text-sm text-stone-300 font-medium">
+                          ዋና የሶፍትዌር መሃንዲስና የመድረኩ ባለቤት (Chief Software Engineer & Owner)
+                        </p>
+                        <p className="text-xs text-amber-400/90 font-mono">
+                          ኢሜይል፦ zebeneasfye5@gmail.com
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 bg-stone-900 rounded-xl border border-stone-800 space-y-2">
+                      <span className="font-serif-sacred font-bold text-sm text-amber-300 block">
+                        ያለ ኢንተርኔት የመስራት አቅም (Offline PWA Architecture)
+                      </span>
+                      <p className="text-xs text-stone-300 leading-relaxed">
+                        ድህረገፁ የላቀ የ Service Worker CacheStorage በመጠቀም ቅዱሳት መጻሕፍትን፣ ስንክሳርን፣ ዜማዎችን፣ የነገረ መለኮት ትምህርቶችንና ዲጂታል መታወቂያዎችን በስልክና በኮምፒውተር ውስጥ ያስቀምጣል፤ በዚህም ምንም ኢንተርኔት በሌለበት ሙሉ በሙሉ ይሰራል።
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-stone-900 rounded-xl border border-stone-800 space-y-2">
+                      <span className="font-serif-sacred font-bold text-sm text-amber-300 block">
+                        የቀጥታ ቪዲዮና ኦዲዮ ቴክኖሎጂ (Hardware WebRTC)
+                      </span>
+                      <p className="text-xs text-stone-300 leading-relaxed">
+                        የቪዲዮ ካሜራውና የድምፅ ማስተላለፊያው በስልኩ ወይም በኮምፒውተሩ ካሜራ/ማይክሮፎን ሃርድዌር በቀጥታ የሚሰራ በመሆኑ፣ ያለ ምንም የሶስተኛ ወገን ጣልቃ ገብነት ጥራቱን የጠበቀ አገልግሎት ይሰጣል።
                       </p>
                     </div>
                   </div>
